@@ -1,0 +1,9 @@
+*.pyc
+.idea/*
+test/*
+
+# Youtube API credential
+client_id.json
+client_secret.json
+video_generator.py-oauth2.json
+

@@ -1,0 +1,6 @@
+oauth2client
+apiclient
+httplib2
+cv2
+numpy
+flask == 0.12.2
