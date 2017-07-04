@@ -4,13 +4,14 @@ import os
 import tempfile
 import shutil
 from os import system, path
-from lib.youtube import get_most_recent_video_name, upload_video
+from lib.youtube import get_most_recent_video_name, upload_video, insert_into_playlist
 
 DATE_FORMAT = "%Y_%m_%d"
 TMP_CAPTURE_DIR = "/tmp/tomato-control-pi-capture"
-#
+PLAYLIST_ID = "PL4BgsQyEYodMayOiajRXmDkQ1NsWKccPP"
+
 # # 1. Get the date of the most recent upload on Youtube
-yt_video_name = get_most_recent_video_name('PL4BgsQyEYodMayOiajRXmDkQ1NsWKccPP')
+yt_video_name = get_most_recent_video_name(PLAYLIST_ID)
 m = re.search("(\d{4}_\d{2}_\d{2})", yt_video_name)
 if m is None:
     print "No YouTube video found"
@@ -53,6 +54,7 @@ target_date = yt_date
 for inc in range(0, dayDelta-1):
     target_date += timedelta(days=1)
     target_date_str = target_date.strftime(DATE_FORMAT)
+    print "================================================"
     print "Process {}".format(target_date)
     target_dir = path.join(TMP_CAPTURE_DIR, target_date_str)
     if not path.isdir(target_dir):
@@ -78,9 +80,11 @@ for inc in range(0, dayDelta-1):
     system(cmd)
 
     # 6. upload to youtube
-    upload_video(video_file, target_date_str)
+    video_id = upload_video(video_file, target_date_str)
+    insert_into_playlist(PLAYLIST_ID, video_id)
 
     # 7. remove the tmp files
     shutil.rmtree(tmpdirname)
+    print "Video process with success! Now, let's do the next one!"
 
 print 'Done!'

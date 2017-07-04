@@ -35,13 +35,15 @@ CLIENT_SECRETS_FILE = "client_secret.json"
 
 # This OAuth 2.0 access scope allows for full read/write access to the
 # authenticated user's account and requires requests to use an SSL connection.
-YOUTUBE_API_SCOPES = "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.upload"
+YOUTUBE_API_SCOPES = "https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.force-ssl"
 API_SERVICE_NAME = "youtube"
 API_VERSION = "v3"
 
 # This variable defines a message to display if the CLIENT_SECRETS_FILE is
 # missing.
 MISSING_CLIENT_SECRETS_MESSAGE = "WARNING: Please configure OAuth 2.0"
+
+
 
 
 # Authorize the request and store authorization credentials.
@@ -120,7 +122,7 @@ def upload_video(file_path, title):
         media_body=MediaFileUpload(file_path, chunksize=-1, resumable=True)
     )
 
-    resumable_upload(insert_request)
+    return resumable_upload(insert_request)
 
 
 # This method implements an exponential backoff strategy to resume a
@@ -135,6 +137,7 @@ def resumable_upload(insert_request):
             status, response = insert_request.next_chunk()
             if 'id' in response:
                 print "Video id '%s' was successfully uploaded." % response['id']
+                return response['id']
             else:
                 exit("The upload failed with an unexpected response: %s" % response)
         except HttpError, e:
@@ -156,3 +159,19 @@ def resumable_upload(insert_request):
             sleep_seconds = random.random() * max_sleep
             print "Sleeping %f seconds and then retrying..." % sleep_seconds
             time.sleep(sleep_seconds)
+
+
+def insert_into_playlist(playlist_id, video_id):
+    print "Attach video {} to playlist {}".format(video_id, playlist_id)
+    results = yt_service.playlistItems().insert(
+        part='snippet',
+        body=dict(
+            snippet=dict(
+                playlistId=playlist_id,
+                resourceId=dict(
+                    kind="youtube#video",
+                    videoId=video_id
+                )
+            )
+        )
+    ).execute()
