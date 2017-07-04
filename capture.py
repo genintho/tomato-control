@@ -5,6 +5,10 @@ import time
 from time import sleep
 
 
+# TODO param
+# Set the timezone, relevant for the picture name!
+os.environ["TZ"] = "US/Pacific"
+
 ROOT_DIR = "capture/"
 
 print "Start loop"
